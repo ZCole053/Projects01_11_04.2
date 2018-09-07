@@ -12,18 +12,40 @@
 var httpRequest = false;
 var countrySel;
 
-// this function allows us to contact other servers for data
-function getRequestObject(){
-    try{
-        httpRequest = new XMLHttpRequest();
+// this function checks when the buttons are selected
+function checkButtons() {
+    var germany = document.getElementById("germany");
+    var us = document.getElementById("us");
+    if (germany.checked || us.checked) {
+        document.getElementById("zipset").style.visibility = "visible";
+        if (germany.checked) {
+            countrySel = "de";
+        } else {
+            countrySel = "us";
+        }
     }
-    catch(requestError){
+}
+
+
+
+// this function allows us to contact other servers for data
+function getRequestObject() {
+    try {
+        httpRequest = new XMLHttpRequest();
+    } catch (requestError) {
         // this is a sort of manual overide
+        document.getElementById("zipset").style.visibility = "visible";
         document.getElementById("casset").style.visibility = "visible";
+        var germany = document.getElementById("germany");
+        var us = document.getElementById("us");
         var zip = document.getElementById("zip").value;
         if (zip.addEventListener) {
+            germany.removeEventListener("click", checkButtons, false);
+            us.removeEventListener("click", checkButtons, false);
             zip.removeEventListener("keyup", checkInput, false);
         } else if (zip.attachEvent) {
+            germany.detachEvent("onclick", checkButtons);
+            us.detachEvent("onclick", checkButtons);
             zip.detachEvent("onkeyup", checkInput);
         }
         return false;
@@ -42,34 +64,31 @@ function checkInput() {
     }
 }
 
-// this function checks when the buttons are selected
-function checkButtons(){
 
-}
 
 // this gets the location of the zip
-function getLocation(){
+function getLocation() {
     var zip = document.getElementById("zip").value;
-    if(!httpRequest){
+    if (!httpRequest) {
         httpRequest = getRequestObject();
     }
     httpRequest.abort();
-    httpRequest.open("get","http://api.zippopotam.us/us/" + zip, true);
+    httpRequest.open("get", "http://api.zippopotam.us/" + countrySel + "/" + zip, true);
     httpRequest.send(null);
     httpRequest.onreadystatechange = displayData;
 }
 
 
 // this function takes the data and displays it into the Dom
-function displayData(){
-    if(httpRequest.readyState === 4 && httpRequest.status ===200){
+function displayData() {
+    if (httpRequest.readyState === 4 && httpRequest.status === 200) {
         var resultData = JSON.parse(httpRequest.responseText);
         var city = document.getElementById("city");
         var state = document.getElementById("state");
         city.value = resultData.places[0]["place name"];
-        state.value = resultData[0]["state abbreviation"];
+        state.value = resultData.places[0]["state abbreviation"];
         document.getElementById("zip").blur();
-        document.getElementById("casset").style.visibility = "visible";
+        document.getElementById("csset").style.visibility = "visible";
     }
 }
 
@@ -85,9 +104,9 @@ if (zip.addEventListener) {
 var germany = document.getElementById("germany");
 var us = document.getElementById("us");
 if (us.addEventListener) {
-    us.addEventListener("keyup", checkButtons, false);
-    germany.addEventListener("keyup", checkButtons, false);
+    us.addEventListener("click", checkButtons, false);
+    germany.addEventListener("click", checkButtons, false);
 } else if (us.attachEvent) {
-    us.attachEvent("onkeyup", checkButtons);
-    germany.attachEvent("onkeyup", checkButtons);
+    us.attachEvent("onclick", checkButtons);
+    germany.attachEvent("onclick", checkButtons);
 }
